@@ -1,0 +1,40 @@
+{
+  "name": "micromail",
+  "version": "1.0.0",
+  "description": "A little nodemailer SMTP microservice",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "micromail": "tsc && node dist/app.js"
+  },
+  "author": "Corey Raymond DeMarse",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-locale": "^2.0.2",
+    "express-rate-limit": "^7.2.0",
+    "express-serve-static-core": "^0.1.1",
+    "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
+    "fs": "^0.0.1-security",
+    "helmet": "^7.1.0",
+    "nodemailer": "^6.9.13",
+    "pino": "^8.20.0",
+    "pino-http": "^9.0.0",
+    "pino-pretty": "^11.0.0",
+    "process": "^0.11.10"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^18.0.3",
+    "@types/nodemailer": "^6.4.4",
+    "@typescript-eslint/eslint-plugin": "^5.30.7",
+    "@typescript-eslint/parser": "^5.30.7",
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "2.7.1",
+    "typescript": "^4.7.4"
+  }
+}
