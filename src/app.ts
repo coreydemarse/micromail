@@ -189,7 +189,7 @@ class microMail {
 
         // catch all validation errors
         if (!errors.isEmpty()) {
-            res.status(418).json({ errors: errors.array() })
+            res.status(418).json({ errors: errors.array() }).end()
             this.#pino.info({
                 code: "POST_EMAIL_FAIL",
                 message: "POST params invalid"
