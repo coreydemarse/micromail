@@ -4,8 +4,8 @@ A little nodemailer SMTP microservice
 
 ### It passes the butter
 
-<img src="https://i.imgur.com/sVYSwYB.gif" alt="drawing" width="100"/>
-
+<img src="https://i.imgur.com/sVYSwYB.gif" alt="drawing" width="100"/>  
+  
 microMail is a simple HTTP POST wrapper around nodemailer
 
 ### Start App
@@ -24,7 +24,7 @@ Install node modules: `yarn install`
 Start application: run `tsc` then do `dist/app.js`  
 Run in Docker: run `tsc` then do `docker-compose up`
 
-### Ruby HTTP Example
+<h3><img src="https://skillicons.dev/icons?i=ruby" style="margin-bottom: -15px;padding-right:6px"/> Ruby HTTP Example</h3>
 
 Make a simple HTTP POST request to micromail to send an email
 
