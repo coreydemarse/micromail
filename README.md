@@ -6,7 +6,7 @@ A little nodemailer SMTP microservice
 
 <img src="https://i.imgur.com/sVYSwYB.gif" alt="drawing" width="100"/>  
   
-microMail is a simple HTTP POST wrapper around nodemailer
+microMail is a simple HTTP POST wrapper around nodemailer with handlebars for templating
 
 ### Start App
 
@@ -38,7 +38,8 @@ Net::HTTP.post(
         'to' => 'receiver@example.com',
         'from' => 'sender@example.com',
         'subject' => 'An example email',
-        'body' => 'Hello World'
+        'template' => 'example',
+        'context' => { 'hello': 'hello world' }
     }.to_json,
     { 'Content-Type': 'application/json' }
 )

@@ -19,6 +19,9 @@ import nodeMailer from "nodemailer"
 import requiredVars from "./requiredVars"
 import { validationResult } from "express-validator"
 import * as validations from "./validations/app"
+import path from "path"
+
+const hbs = require("nodemailer-express-handlebars")
 
 /* ****************************************************************************
  * microMail class
@@ -75,6 +78,28 @@ class microMail {
                     pass: process.env.SMTP_PASS
                 }
             })
+
+            const viewPath = path.resolve(__dirname, "./templates/views/")
+            const partialsPath = path.resolve(__dirname, "./templates/partials")
+
+            this.#transporter.use(
+                "compile",
+                hbs({
+                    viewEngine: {
+                        //extension name
+                        extName: ".handlebars",
+                        // layout path declare
+                        layoutsDir: viewPath,
+                        defaultLayout: false,
+                        //partials directory path
+                        partialsDir: partialsPath,
+                        express
+                    },
+                    //View path declare
+                    viewPath: viewPath,
+                    extName: ".handlebars"
+                })
+            )
 
             this.#transporter.verify()
 
@@ -147,6 +172,7 @@ class microMail {
      * ****************************************************************************/
 
     readonly #postSend = async (req: any, res: any) => {
+        /*
         const myValidationResult = validationResult.withDefaults({
             formatter: (error) => {
                 return {
@@ -163,6 +189,8 @@ class microMail {
             return
         }
 
+        */
+
         this.#pino.info({
             code: "POST_EMAIL_AWAIT",
             message: "Attempting to send email..."
@@ -170,12 +198,15 @@ class microMail {
 
         // send email
         try {
-            await this.#transporter.sendMail({
+            const mailOptions = {
                 from: `${req.body.from} <${req.body.from}>`, // sender address
                 to: req.body.to, // list of receivers - comma separated string ("example@example1.com, example@example2.com")
                 subject: req.body.subject, // Subject line
-                html: req.body.body // body
-            })
+                template: req.body.template,
+                context: req.body.context
+            }
+
+            this.#transporter.sendMail(mailOptions)
 
             this.#pino.info({
                 code: "POST_EMAIL_SUCCESS",
