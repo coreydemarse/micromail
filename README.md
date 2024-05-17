@@ -21,8 +21,8 @@ API_PORT=3939
 ```
 
 Install node modules: `yarn install`  
-Start application: run `tsc` then do `dist/app.js`  
-Run in Docker: run `tsc` then do `docker-compose up`
+Start application: run `yarn compile` then do `yarn start`  
+Run in Docker: run `yarn compile` then do `docker-compose up`
 
 <h3> Ruby HTTP Example</h3>
 <img src="https://skillicons.dev/icons?i=ruby"/>  
