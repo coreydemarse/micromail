@@ -24,8 +24,9 @@ Install node modules: `yarn install`
 Start application: run `tsc` then do `dist/app.js`  
 Run in Docker: run `tsc` then do `docker-compose up`
 
-<h3><img src="https://skillicons.dev/icons?i=ruby" style="margin-bottom: -15px;padding-right:6px"/> Ruby HTTP Example</h3>
-
+<h3> Ruby HTTP Example</h3>
+<img src="https://skillicons.dev/icons?i=ruby"/>  
+  
 Make a simple HTTP POST request to micromail to send an email
 
 ```
