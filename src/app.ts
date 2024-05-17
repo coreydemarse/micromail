@@ -172,6 +172,11 @@ class microMail {
      * ****************************************************************************/
 
     readonly #postSend = async (req: any, res: any) => {
+        this.#pino.info({
+            code: "POST_EMAIL_AWAIT",
+            message: "Attempting to send email..."
+        })
+
         const myValidationResult = validationResult.withDefaults({
             formatter: (error) => {
                 return {
@@ -185,13 +190,12 @@ class microMail {
         // catch all validation errors
         if (!errors.isEmpty()) {
             res.status(418).json({ errors: errors.array() })
+            this.#pino.info({
+                code: "POST_EMAIL_FAIL",
+                message: "POST params invalid"
+            })
             return
         }
-
-        this.#pino.info({
-            code: "POST_EMAIL_AWAIT",
-            message: "Attempting to send email..."
-        })
 
         // send email
         try {
