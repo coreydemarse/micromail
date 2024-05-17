@@ -172,7 +172,6 @@ class microMail {
      * ****************************************************************************/
 
     readonly #postSend = async (req: any, res: any) => {
-        /*
         const myValidationResult = validationResult.withDefaults({
             formatter: (error) => {
                 return {
@@ -188,8 +187,6 @@ class microMail {
             res.status(418).json({ errors: errors.array() })
             return
         }
-
-        */
 
         this.#pino.info({
             code: "POST_EMAIL_AWAIT",

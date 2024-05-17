@@ -5,13 +5,14 @@ export const postSend: ValidationChain[] = [
     check("to").not().isEmpty().withMessage("to is required"),
     check("from").not().isEmpty().withMessage("from is required"),
     check("subject").not().isEmpty().withMessage("subject is required"),
-    check("body").not().isEmpty().withMessage("body is required"),
+    check("template").not().isEmpty().withMessage("template is required"),
+    check("context").not().isEmpty().withMessage("context is required"),
 
     //check types
     check("to").isString().withMessage("to must be a string"),
     check("from").isString().withMessage("from must be a string"),
     check("subject").isString().withMessage("subject must be a string"),
-    check("body").isString().withMessage("body must be a string"),
+    check("template").isString().withMessage("body must be a string"),
 
     // name
     check("to")
@@ -27,6 +28,6 @@ export const postSend: ValidationChain[] = [
 
     // subject
     check("subject")
-        .isLength({ min: 1, max: 28 })
-        .withMessage("subject must be between 1 and 28 characters")
+        .isLength({ min: 1, max: 40 })
+        .withMessage("subject must be between 1 and 40 characters")
 ]
