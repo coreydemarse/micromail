@@ -54,14 +54,13 @@ Replies with `error 418` if email was not sent
 ```
 import requests
 
-def main():
-    requests.post('http://127.0.0.1:3939', json={
-        'to': 'receiver@example.com',
-        'from': 'sender@example.com',
-        'subject': 'An example email',
-        'template': 'example',
-        'context': { 'hello': 'hello world' }
-    })
+requests.post('http://127.0.0.1:3939', json={
+    'to': 'receiver@example.com',
+    'from': 'sender@example.com',
+    'subject': 'An example email',
+    'template': 'example',
+    'context': { 'hello': 'hello world' }
+})
 ```
 
 Replies with `status 200` if email sent successfully  
