@@ -35,14 +35,33 @@ require 'net/http'
 Net::HTTP.post(
     URI('http://127.0.0.1:3939/'),
     {
-        'to' => 'receiver@example.com',
-        'from' => 'sender@example.com',
-        'subject' => 'An example email',
-        'template' => 'example',
-        'context' => { 'hello': 'hello world' }
+        :to => 'receiver@example.com',
+        :from => 'sender@example.com',
+        :subject => 'An example email',
+        :template => 'example',
+        :context => { 'hello': 'hello world' }
     }.to_json,
     { 'Content-Type': 'application/json' }
 )
+```
+
+Replies with `status 200` if email sent successfully  
+Replies with `error 418` if email was not sent
+
+<h3>Python HTTP Example</h3>
+<img src="https://skillicons.dev/icons?i=python"/>
+
+```
+import requests
+
+def main():
+    requests.post('http://127.0.0.1:3939', json={
+        'to': 'receiver@example.com',
+        'from': 'sender@example.com',
+        'subject': 'An example email',
+        'template': 'example',
+        'context': { 'hello': 'hello world' }
+    })
 ```
 
 Replies with `status 200` if email sent successfully  
