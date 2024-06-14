@@ -54,7 +54,7 @@ def sendmail(email)
 Replies with `status 200` if email sent successfully  
 Replies with `error 418` if email was not sent
 
-<h3>Python HTTP Example</h3>
+<h3>Python Async HTTP Example</h3>
 <img src="https://skillicons.dev/icons?i=python"/>
 
 ```
