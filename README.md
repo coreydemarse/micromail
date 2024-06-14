@@ -49,6 +49,10 @@ def sendmail(email)
     })
 
     client.call(request)
+ensure
+    # Close the client to release resources
+    client.close if client
+end
 ```
 
 Replies with `status 200` if email sent successfully  
