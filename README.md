@@ -24,25 +24,31 @@ Install node modules: `yarn install`
 Start application: run `yarn compile` then do `yarn start`  
 Run in Docker: run `yarn compile` then do `docker-compose up`
 
-<h3> Ruby HTTP Example</h3>
+<h3> Ruby Async HTTP Example</h3>
 <img src="https://skillicons.dev/icons?i=ruby"/>  
   
 Make a simple HTTP POST request to micromail to send an email
 
 ```
-require 'net/http'
+require 'async/http/client'
 
-Net::HTTP.post(
-    URI('http://127.0.0.1:3939/'),
-    {
-        :to => 'receiver@example.com',
-        :from => 'sender@example.com',
-        :subject => 'An example email',
-        :template => 'example',
-        :context => { 'hello': 'hello world' }
-    }.to_json,
-    { 'Content-Type': 'application/json' }
-)
+def sendmail(email)
+    url = Async::HTTP::Endpoint.parse('http://127.0.0.1:3939/')
+    client = Async::HTTP::Client.new(url)
+
+    # Prepare the POST request with the provided data
+    request = Async::HTTP::Request.new('POST', '/', {
+        'Content-Type' => 'application/json',
+        'Content-Length' => data.bytesize.to_s
+    },{
+        :to => email[:recipient],
+        :from => email[:sender],
+        :subject => email[:subject],
+        :template => email[:template],
+        :context => email[:context]
+    })
+
+    client.call(request)
 ```
 
 Replies with `status 200` if email sent successfully  
@@ -52,16 +58,49 @@ Replies with `error 418` if email was not sent
 <img src="https://skillicons.dev/icons?i=python"/>
 
 ```
-import requests
+import json
+import httpx
 
-requests.post('http://127.0.0.1:3939', json={
-    'to': 'receiver@example.com',
-    'from': 'sender@example.com',
-    'subject': 'An example email',
-    'template': 'example',
-    'context': { 'hello': 'hello world' }
-})
+async def sendmail(email):
+    # Convert the email data to JSON
+    data = {
+        'to': email['recipient'],
+        'from': email['sender'],
+        'subject': email['subject'],
+        'template': email['template'],
+        'context': email['context']
+    }
+
+    # Convert the data to JSON format
+    json_data = json.dumps(data)
+
+    # Create an HTTPX client
+    async with httpx.AsyncClient() as client:
+        try:
+            # Prepare the POST request with the provided data
+            response = await client.post('http://127.0.0.1:3939/', data=json_data, headers={'Content-Type': 'application/json'})
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                print("POST request successful!")
+                print("Response:", response.text)
+            else:
+                print(f"POST request failed with status code {response.status_code}")
+                print("Response:", response.text)
+        except httpx.RequestError as e:
+            print(f"Error making POST request: {e}")
 ```
 
-Replies with `status 200` if email sent successfully  
-Replies with `error 418` if email was not sent
+#### Example usage:
+
+```
+email = {
+    'recipient': 'recipient@example.com',
+    'sender': 'sender@example.com',
+    'subject': 'Test email',
+    'template': 'email_template',
+    'context': {'key': 'value'}
+}
+
+await sendmail(email)
+```
