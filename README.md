@@ -46,7 +46,7 @@ def sendmail(email)
         :subject => email[:subject],
         :template => email[:template],
         :context => email[:context]
-    })
+    }.to_json)
 
     client.call(request)
 ensure
