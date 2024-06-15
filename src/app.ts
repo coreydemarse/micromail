@@ -18,7 +18,6 @@ import requiredVars from "./requiredVars"
 import path from "path"
 import * as redis from "redis"
 import { z } from "zod"
-import url from "url"
 
 const hbs = require("nodemailer-express-handlebars")
 
