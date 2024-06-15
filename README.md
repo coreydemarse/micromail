@@ -17,6 +17,7 @@ SMTP_HOST=example.com
 SMTP_PORT=465
 SMTP_USER=exampleuser
 SMTP_PASS=examplepass
+REDIS_URL=redis://127.0.0.1:6379
 ```
 
 Install node modules: `yarn install`  

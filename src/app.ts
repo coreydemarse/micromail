@@ -18,6 +18,7 @@ import requiredVars from "./requiredVars"
 import path from "path"
 import * as redis from "redis"
 import { z } from "zod"
+import url from "url"
 
 const hbs = require("nodemailer-express-handlebars")
 
@@ -26,8 +27,11 @@ const hbs = require("nodemailer-express-handlebars")
  * ****************************************************************************/
 
 class microMail {
-    readonly #client = redis.createClient()
-    readonly #subscriber = this.#client.duplicate()
+    readonly #client: redis.RedisClientType = redis.createClient({
+        url: process.env.REDIS_URL
+    })
+
+    readonly #subscriber: redis.RedisClientType = this.#client.duplicate()
 
     // logging middleware
     readonly #pino: Logger = pino(
@@ -244,7 +248,7 @@ class microMail {
             return
         } catch (e) {
             if (e.code == "ENOENT") {
-                this.#pino.warn(e, {
+                this.#pino.warn({
                     code: "EMAIL_ERROR",
                     message: "ERROR SENDING EMAIL - MISSING TEMPLATE"
                 })
