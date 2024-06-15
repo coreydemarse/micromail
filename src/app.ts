@@ -192,7 +192,7 @@ class microMail {
                 from: z.string().email().min(5),
                 subject: z.string().min(1),
                 template: z.string().min(1),
-                context: z.any()
+                context: z.record(z.string())
             })
 
             try {
@@ -234,7 +234,7 @@ class microMail {
                 context: job.context
             }
 
-            this.#transporter.sendMail(mailOptions)
+            await this.#transporter.sendMail(mailOptions)
 
             this.#pino.info({
                 code: "EMAIL_SUCCESS",
@@ -243,10 +243,17 @@ class microMail {
 
             return
         } catch (e) {
-            this.#pino.warn(e, {
-                code: "EMAIL_ERROR",
-                message: "ERROR SENDING EMAIL"
-            })
+            if (e.code == "ENOENT") {
+                this.#pino.warn(e, {
+                    code: "EMAIL_ERROR",
+                    message: "ERROR SENDING EMAIL - MISSING TEMPLATE"
+                })
+            } else {
+                this.#pino.warn(e, {
+                    code: "EMAIL_ERROR",
+                    message: "ERROR SENDING EMAIL"
+                })
+            }
 
             return
         }
