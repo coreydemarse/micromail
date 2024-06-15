@@ -10,16 +10,14 @@
  * ****************************************************************************/
 
 import dotenv from "dotenv"
-import express, { Application } from "express"
 import pino, { Logger } from "pino"
 import { exit } from "process"
 import fs from "fs"
-import helmet from "helmet"
 import nodeMailer from "nodemailer"
 import requiredVars from "./requiredVars"
-import { validationResult } from "express-validator"
-import * as validations from "./validations/app"
 import path from "path"
+import * as redis from "redis"
+import { z } from "zod"
 
 const hbs = require("nodemailer-express-handlebars")
 
@@ -28,7 +26,8 @@ const hbs = require("nodemailer-express-handlebars")
  * ****************************************************************************/
 
 class microMail {
-    readonly #app: Application = express()
+    readonly #client = redis.createClient()
+    readonly #subscriber = this.#client.duplicate()
 
     // logging middleware
     readonly #pino: Logger = pino(
@@ -92,8 +91,7 @@ class microMail {
                         layoutsDir: viewPath,
                         defaultLayout: false,
                         //partials directory path
-                        partialsDir: partialsPath,
-                        express
+                        partialsDir: partialsPath
                     },
                     //View path declare
                     viewPath: viewPath,
@@ -121,25 +119,48 @@ class microMail {
             exit()
         }
 
-        this.#app.use(helmet())
-        this.#app.use(express.json())
-        this.#app.use(express.urlencoded())
+        this.#connectRedis()
+    }
 
-        // initialize routes
-        this.#routes()
-
+    readonly #connectRedis = async () => {
         try {
             this.#pino.info({
                 code: "SERVER_START_AWAIT",
-                message: `ATTEMPTING TO LISTEN ON PORT ${process.env.API_PORT}`
+                message: `CONNECTING TO REDIS`
             })
 
             // start server
-            this.#app.listen(`${process.env.API_PORT}`)
+            await Promise.all([
+                this.#client.connect(),
+                this.#subscriber.connect()
+            ])
+
+            this.#client.on("error", (err) => {
+                this.#pino.warn({
+                    code: "SERVER_REDIS_ERROR",
+                    message: `REDIS ERROR`,
+                    error: err
+                })
+            })
+
+            this.#subscriber.on("error", (err) => {
+                this.#pino.warn({
+                    code: "SERVER_REDIS_ERROR",
+                    message: `REDIS ERROR`,
+                    error: err
+                })
+            })
+
+            this.#handleEvents()
 
             this.#pino.info({
-                code: "SERVER_START_SUCCESS",
-                message: `SERVER IS SUCCESSFULLY LISTENING ON PORT ${process.env.API_PORT}`
+                code: "SERVER_REDIS_SUCCESS",
+                message: `SERVER SUCCESSFULLY CONNECTED TO REDIS`
+            })
+
+            this.#pino.info({
+                code: "SERVER_INIT_SUCCESS",
+                message: `SERVER SUCCESSFULLY INITIALIZED, WAITING FOR JOBS!`
             })
         } catch (e) {
             this.#pino.fatal({
@@ -150,84 +171,91 @@ class microMail {
 
             exit()
         }
-
-        this.#pino.info({
-            code: "SERVER_INIT_SUCCESS",
-            message: `SERVER INITIALIZATION SUCCESSFUL`,
-            port: process.env.API_PORT
-        })
     }
 
     /* ****************************************************************************
-     * API routes
+     * Handle Redis Events
      * ****************************************************************************/
 
-    readonly #routes = () => {
-        // register routes
-        this.#app.post("/", validations.postSend, this.#postSend)
-    }
+    readonly #handleEvents = () => {
+        // redis hook
+        this.#subscriber.subscribe("micromail", async (message, channel) => {
+            this.#pino.info({
+                code: "EMAIL_AWAIT",
+                message: "ATTEMPTING TO SEND EMAIL..."
+            })
 
-    /* ****************************************************************************
-     * POST '/'
-     * ****************************************************************************/
+            const job = JSON.parse(message)
 
-    readonly #postSend = async (req: any, res: any) => {
-        this.#pino.info({
-            code: "POST_EMAIL_AWAIT",
-            message: "Attempting to send email..."
-        })
+            const zJob = z.object({
+                to: z.string().email().min(5),
+                from: z.string().email().min(5),
+                subject: z.string().min(1),
+                template: z.string().min(1),
+                context: z.any()
+            })
 
-        const myValidationResult = validationResult.withDefaults({
-            formatter: (error) => {
-                return {
-                    msg: error.msg
-                }
+            try {
+                await zJob.parseAsync(job)
+            } catch (e) {
+                this.#pino.warn({
+                    code: "EMAIL_ERROR",
+                    message: "JOB PARAMS INVALID"
+                })
+
+                return
+            }
+
+            try {
+                await this.#sendMail(job)
+            } catch (e) {
+                this.#pino.warn(e, {
+                    code: "EMAIL_ERROR",
+                    message: "TYPESCRIPT ERROR"
+                })
+
+                return
             }
         })
+    }
 
-        const errors = myValidationResult(req)
+    /* ****************************************************************************
+     * Send Mail
+     * ****************************************************************************/
 
-        // catch all validation errors
-        if (!errors.isEmpty()) {
-            res.status(418).json({ errors: errors.array() }).end()
-            this.#pino.info({
-                code: "POST_EMAIL_FAIL",
-                message: "POST params invalid"
-            })
-            return
-        }
-
+    readonly #sendMail = async (job: any) => {
         // send email
         try {
             const mailOptions = {
-                from: `${req.body.from} <${req.body.from}>`, // sender address
-                to: req.body.to, // list of receivers - comma separated string ("example@example1.com, example@example2.com")
-                subject: req.body.subject, // Subject line
-                template: req.body.template,
-                context: req.body.context
+                from: `${job.from} <${job.from}>`, // sender address
+                to: job.to, // list of receivers - comma separated string ("example@example1.com, example@example2.com")
+                subject: job.subject, // Subject line
+                template: job.template,
+                context: job.context
             }
 
             this.#transporter.sendMail(mailOptions)
 
             this.#pino.info({
-                code: "POST_EMAIL_SUCCESS",
-                message: "Success sending email"
+                code: "EMAIL_SUCCESS",
+                message: "SUCCESS SENDING EMAIL"
             })
 
-            res.status(200).end()
             return
         } catch (e) {
             this.#pino.warn(e, {
-                code: "POST_EMAIL_ERROR",
-                message: "Error sending email"
+                code: "EMAIL_ERROR",
+                message: "ERROR SENDING EMAIL"
             })
 
-            res.status(418).end()
             return
         }
     }
 
-    // check for environment variables listed in requiredVars
+    /* ****************************************************************************
+     * Check Environment Variables
+     * ****************************************************************************/
+
     readonly #checkEnvVars = function () {
         for (let i = 0; i < requiredVars.length; i++) {
             if (!process.env[requiredVars[i]]) {

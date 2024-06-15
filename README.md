@@ -6,7 +6,7 @@ A little nodemailer SMTP microservice
 
 <img src="https://i.imgur.com/sVYSwYB.gif" alt="drawing" width="100"/>  
   
-microMail is a simple HTTP POST wrapper around nodemailer with handlebars for templating
+microMail is a redis-backed SMTP microservice with handlebars templating
 
 ### Start App
 
@@ -24,87 +24,44 @@ Install node modules: `yarn install`
 Start application: run `yarn compile` then do `yarn start`  
 Run in Docker: run `yarn compile` then do `docker-compose up`
 
-<h3> Ruby Async HTTP Example</h3>
+Handlebar email templates can be found and altered in `src/templates/`
+
+<h3> Ruby Example</h3>
 <img src="https://skillicons.dev/icons?i=ruby"/>  
   
-Make a simple HTTP POST request to micromail to send an email
+Redis publish an email via Ruby
 
 ```
-require 'async/http/client'
+require 'redis'
+require 'json'
 
-def sendmail(email)
-    url = Async::HTTP::Endpoint.parse('http://127.0.0.1:3939/')
-    client = Async::HTTP::Client.new(url)
+redis = Redis.new
 
-    # Prepare the POST request with the provided data
-    request = Async::HTTP::Request.new('POST', '/', {
-        'Content-Type' => 'application/json',
-        'Content-Length' => data.bytesize.to_s
-    },{
-        :to => email[:recipient],
-        :from => email[:sender],
-        :subject => email[:subject],
-        :template => email[:template],
-        :context => email[:context]
-    }.to_json)
-
-    client.call(request)
-ensure
-    # Close the client to release resources
-    client.close if client
-end
+redis.publish('micromail', {
+    :to => "recipient@example.com",
+    :from => "sender@example.com",
+    :subject => "hello world",
+    :template => "example",
+    :context => { hello: "hello world" }
+}.to_json)
 ```
 
-Replies with `status 200` if email sent successfully  
-Replies with `error 418` if email was not sent
-
-<h3>Python Async HTTP Example</h3>
+<h3>Python Example</h3>
 <img src="https://skillicons.dev/icons?i=python"/>
 
+Redis publish an email via Python
+
 ```
+import redis
 import json
-import httpx
 
-async def sendmail(email):
-    # Convert the email data to JSON
-    data = {
-        'to': email['recipient'],
-        'from': email['sender'],
-        'subject': email['subject'],
-        'template': email['template'],
-        'context': email['context']
-    }
+redis_client = redis.Redis(host='localhost', port=6379, db=0)
 
-    # Convert the data to JSON format
-    json_data = json.dumps(data)
-
-    # Create an HTTPX client
-    async with httpx.AsyncClient() as client:
-        try:
-            # Prepare the POST request with the provided data
-            response = await client.post('http://127.0.0.1:3939/', data=json_data, headers={'Content-Type': 'application/json'})
-
-            # Check if the request was successful
-            if response.status_code == 200:
-                print("POST request successful!")
-                print("Response:", response.text)
-            else:
-                print(f"POST request failed with status code {response.status_code}")
-                print("Response:", response.text)
-        except httpx.RequestError as e:
-            print(f"Error making POST request: {e}")
-```
-
-#### Example usage:
-
-```
-email = {
-    'recipient': 'recipient@example.com',
-    'sender': 'sender@example.com',
-    'subject': 'Test email',
-    'template': 'email_template',
-    'context': {'key': 'value'}
-}
-
-await sendmail(email)
+redis_client.publish('micromail', json.dumps({
+    'to': 'recipient@example.com',
+    'from': 'sender@example.com',
+    'subject': 'hello world',
+    'template': 'example',
+    'context': {'hello': 'hello world'}
+}))
 ```
