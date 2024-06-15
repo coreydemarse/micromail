@@ -17,7 +17,6 @@ SMTP_HOST=example.com
 SMTP_PORT=465
 SMTP_USER=exampleuser
 SMTP_PASS=examplepass
-API_PORT=3939
 ```
 
 Install node modules: `yarn install`  
