@@ -26,11 +26,14 @@ const hbs = require("nodemailer-express-handlebars")
  * ****************************************************************************/
 
 class microMail {
+    // Redis instances
     readonly #client: redis.RedisClientType = redis.createClient({
         url: process.env.REDIS_URL
     })
-
     readonly #subscriber: redis.RedisClientType = this.#client.duplicate()
+
+    // SMTP transport
+    readonly #transporter: nodeMailer.Transporter
 
     // logging middleware
     readonly #pino: Logger = pino(
@@ -50,7 +53,9 @@ class microMail {
         })
     )
 
-    readonly #transporter: nodeMailer.Transporter
+    /* ****************************************************************************
+     * microMail constructor
+     * ****************************************************************************/
 
     constructor() {
         // dotenv
@@ -69,18 +74,33 @@ class microMail {
             message: "INITIALIZING SERVER"
         })
 
+        // create and assign nodemailer transport
+        this.#transporter = nodeMailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseFloat(process.env.SMTP_PORT),
+            secure: true,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        })
+
+        // connect and verify
+        Promise.all([this.#connectSMTP(), this.#connectRedis()]).then(() => {
+            this.#pino.info({
+                code: "SERVER_INIT_SUCCESS",
+                message: `SERVER SUCCESSFULLY INITIALIZED, WAITING FOR JOBS!`
+            })
+        })
+    }
+
+    /* ****************************************************************************
+     * Connect to SMTP
+     * ****************************************************************************/
+
+    readonly #connectSMTP = async () => {
         // create nodemailer transporter
         try {
-            this.#transporter = nodeMailer.createTransport({
-                host: process.env.SMTP_HOST,
-                port: parseFloat(process.env.SMTP_PORT),
-                secure: true,
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                }
-            })
-
             const viewPath = path.resolve(__dirname, "./templates/views/")
             const partialsPath = path.resolve(__dirname, "./templates/partials")
 
@@ -102,7 +122,7 @@ class microMail {
                 })
             )
 
-            this.#transporter.verify()
+            await this.#transporter.verify()
 
             this.#pino.info({
                 code: "SERVER_SMTP_CONNECTED",
@@ -121,9 +141,11 @@ class microMail {
 
             exit()
         }
-
-        this.#connectRedis()
     }
+
+    /* ****************************************************************************
+     * Connect to Redis
+     * ****************************************************************************/
 
     readonly #connectRedis = async () => {
         try {
@@ -160,11 +182,6 @@ class microMail {
                 code: "SERVER_REDIS_SUCCESS",
                 message: `SERVER SUCCESSFULLY CONNECTED TO REDIS`
             })
-
-            this.#pino.info({
-                code: "SERVER_INIT_SUCCESS",
-                message: `SERVER SUCCESSFULLY INITIALIZED, WAITING FOR JOBS!`
-            })
         } catch (e) {
             this.#pino.fatal({
                 code: "SERVER_FATAL_EXIT",
@@ -195,7 +212,7 @@ class microMail {
                 from: z.string().email().min(5),
                 subject: z.string().min(1),
                 template: z.string().min(1),
-                context: z.record(z.string())
+                context: z.record(z.any())
             })
 
             try {
