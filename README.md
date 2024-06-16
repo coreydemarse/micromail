@@ -104,25 +104,6 @@ Redis publish an email via PHP
 
 ---
 
-<h3>TypeScript Example</h3>
-<img src="https://skillicons.dev/icons?i=typescript"/>
-
-Redis publish an email via TypeScript
-
-```
-import Redis from 'ioredis'
-
-const redis = new Redis()
-
-redis.publish('micromail', JSON.stringify({
-    to: 'recipient@example.com',
-    from: 'sender@example.com',
-    subject: 'hello world',
-    template: 'example',
-    context: { hello: 'hello world' },
-}))
-```
-
 <h3>C# Example</h3>
 <img src="https://skillicons.dev/icons?i=cs" />
   
