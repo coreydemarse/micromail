@@ -26,6 +26,8 @@ Run in Docker: run `yarn compile` then do `docker-compose up`
 
 Handlebar email templates can be found and altered in `src/templates/`
 
+---
+
 <h3> Ruby Example</h3>
 <img src="https://skillicons.dev/icons?i=ruby"/>  
   
@@ -46,6 +48,8 @@ redis.publish('micromail', {
 }.to_json)
 ```
 
+---
+
 <h3>Python Example</h3>
 <img src="https://skillicons.dev/icons?i=python"/>
 
@@ -63,5 +67,56 @@ redis_client.publish('micromail', json.dumps({
     'subject': 'hello world',
     'template': 'example',
     'context': {'hello': 'hello world'}
+}))
+```
+
+---
+
+<h3>PHP Example</h3>
+<img src="https://skillicons.dev/icons?i=php"/>
+
+Redis publish an email via PHP
+
+```
+<?php
+    require 'predis/autoload.php';
+    Predis\Autoloader::register();
+
+    use Predis\Client;
+
+    $redis = new Client([
+        'scheme' => 'tcp',
+        'host'   => '127.0.0.1',
+        'port'   => 6379,
+    ]);
+
+    $redis->publish('micromail', json_encode([
+        'to' => 'recipient@example.com',
+        'from' => 'sender@example.com',
+        'subject' => 'hello world',
+        'template' => 'example',
+        'context' => ['hello' => 'hello world'],
+    ]));
+?>
+```
+
+---
+
+<h3>TypeScript Example</h3>
+<img src="https://skillicons.dev/icons?i=typescript"/>
+
+Redis publish an email via TypeScript
+
+```
+import Redis from 'ioredis'
+
+const redis = new Redis()
+
+redis.publish('micromail', JSON.stringify({
+    to: 'recipient@example.com',
+    from: 'sender@example.com',
+    subject: 'hello world',
+    template: 'example',
+    context: { hello: 'hello world' },
 }))
 ```
