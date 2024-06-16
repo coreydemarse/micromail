@@ -126,12 +126,12 @@ class microMail {
 
             this.#pino.info({
                 code: "SERVER_SMTP_CONNECTED",
-                message: "SMTP server connected"
+                message: "SERVER SUCCESSFULLY CONNECTED TO SMTP"
             })
         } catch (e) {
             this.#pino.error({
                 code: "SERVER_NO_TRANSPORTER",
-                message: "Failed to initialize SMTP transporter",
+                message: "FAILED TO INITIALIZE SMTP TRANSPORTER",
                 error: e
             })
             this.#pino.fatal({
@@ -149,11 +149,6 @@ class microMail {
 
     readonly #connectRedis = async () => {
         try {
-            this.#pino.info({
-                code: "SERVER_START_AWAIT",
-                message: `CONNECTING TO REDIS`
-            })
-
             // start server
             await Promise.all([
                 this.#client.connect(),
@@ -251,7 +246,10 @@ class microMail {
                 to: job.to, // list of receivers - comma separated string ("example@example1.com, example@example2.com")
                 subject: job.subject, // Subject line
                 template: job.template,
-                context: job.context
+                context: job.context,
+                headers: {
+                    "X-Mailer": "microMail"
+                }
             }
 
             await this.#transporter.sendMail(mailOptions)
@@ -263,7 +261,7 @@ class microMail {
 
             return
         } catch (e) {
-            if (e.code == "ENOENT") {
+            if (e.code === "ENOENT") {
                 this.#pino.warn({
                     code: "EMAIL_ERROR",
                     message: "ERROR SENDING EMAIL - MISSING TEMPLATE"
