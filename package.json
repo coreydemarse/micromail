@@ -1,6 +1,6 @@
 {
     "name": "micromail",
-    "version": "1.2.2",
+    "version": "1.2.4",
     "description": "A little nodemailer SMTP microservice",
     "main": "index.js",
     "scripts": {
