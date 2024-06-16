@@ -120,3 +120,22 @@ redis.publish('micromail', JSON.stringify({
     context: { hello: 'hello world' },
 }))
 ```
+
+<h3>C# Example</h3>
+<img src="https://skillicons.dev/icons?i=cs" />
+  
+Redis publish an email via C#
+
+```
+var redis = ConnectionMultiplexer.Connect("localhost:6379");
+var db = redis.GetDatabase();
+
+db.Publish("micromail", JsonConvert.SerializeObject(new
+{
+    to = "recipient@example.com",
+    from = "sender@example.com",
+    subject = "hello world",
+    template = "example",
+    context = new { hello = "hello world" }
+}));
+```
