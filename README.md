@@ -8,6 +8,10 @@ A little nodemailer SMTP microservice
   
 microMail is a redis-backed SMTP microservice with handlebars templating
 
+Creating and managing email templates and firing off emails isn't always easy in some frameworks, so this universal microservice was created to help you get you quickly set up with mailing
+
+Simply publish an event to Redis to send an email from any web app, service or script you may have on the back-end
+
 ### Start App
 
 Setup .env variables:
