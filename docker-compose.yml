@@ -1,15 +1,15 @@
 version: "3.3"
 services:
     node:
-        image: node:current-alpine
-        command: [sh, -c, "yarn install --frozen-lockfile && node dist/app.js"]
+        image: oven/bun:alpine
+        command: [sh, -c, "bun install && bun ./src/app.ts"]
         env_file: .env
         restart: unless-stopped
         ports:
             - "3939:3939"
         volumes:
-            - ./dist:/serve/node/dist
-            - ./package.json:/serve/node/package.json
-            - ./yarn.lock:/serve/node/yarn.lock
-            - ./node_modules:/serve/node/node_modules
-        working_dir: /serve/node
+            - ./src:/serve/bun/src
+            - ./package.json:/serve/bun/package.json
+            - ./tsconfig.json:/serve/bun/tsconfig.json
+            - ./bun.lockb:/serve/bun/bun.lockb
+        working_dir: /serve/bun

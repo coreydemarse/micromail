@@ -1,16 +1,16 @@
 # micromail
 
-A little nodemailer SMTP microservice (~300 loc)
+A little nodemailer SMTP real-time microservice (~300 loc)
 
 ### It passes the butter
 
 <img src="https://i.imgur.com/sVYSwYB.gif" alt="drawing" width="100"/>  
   
-microMail is little redis-backed SMTP microservice with handlebars templating.
+microMail is little redis-backed SMTP real-time microservice with handlebars templating.
 
 Creating and managing email templates and firing off emails isn't always easy in some frameworks, so this universal microservice was created to help you get you quickly set up with mailing in a modular way that can be utilized across your architecture. Simply publish an event to Redis to send a templated email from any web app, service or script you may have on the back-end.
 
-### Start App
+### Setup App
 
 Setup .env variables:
 
@@ -22,9 +22,16 @@ SMTP_PASS=examplepass
 REDIS_URL=redis://127.0.0.1:6379
 ```
 
-Install node modules: `yarn install`  
-Start application: run `yarn compile` then do `yarn start`  
-Run in Docker: run `yarn compile` then do `docker-compose up`
+### Start App
+
+<img src="https://skillicons.dev/icons?i=bun,docker"/>
+
+Using Bun / Docker
+<br />
+
+Install node modules: `bun install`  
+Start application: run `bun src/app.ts`  
+Run in Docker: run `docker-compose up`
 
 Handlebar email templates can be found and altered in `src/templates/`
 
